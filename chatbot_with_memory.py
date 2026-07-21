@@ -1,0 +1,125 @@
+"""
+Custom AI Chatbot with Memory (Debug Mode)
+--------------------------------------------
+Project 1 - DecodeLabs Generative AI Internship
+
+This version clearly displays every request and response in the
+terminal, so you can see for yourself what's happening in the "backend".
+"""
+
+import os
+import sys
+from openai import OpenAI
+
+# ---------------------------------------------------------
+# STEP 0: DEBUG MODE ON/OFF
+# ---------------------------------------------------------
+# Keep it True to see detailed request/response info in the terminal.
+# Set it to False to run like a clean, normal chatbot.
+DEBUG_MODE = False
+
+# ---------------------------------------------------------
+# STEP 1: API KEY SETUP
+# ---------------------------------------------------------
+API_KEY = os.environ.get("GROQ_API_KEY")
+
+if not API_KEY:
+    print("ERROR: GROQ_API_KEY environment variable is not set.")
+    print("Run this command in PowerShell:")
+    print('  $env:GROQ_API_KEY="paste_your_actual_key_here"')
+    sys.exit(1)
+
+client = OpenAI(
+    api_key=API_KEY,
+    base_url="https://api.groq.com/openai/v1",
+)
+
+MODEL_NAME = "llama-3.3-70b-versatile"
+
+# ---------------------------------------------------------
+# STEP 2: MEMORY SETUP
+# ---------------------------------------------------------
+history = []
+MAX_MESSAGES = 20
+
+
+def trim_history():
+    global history
+    if len(history) > MAX_MESSAGES:
+        history = history[-MAX_MESSAGES:]
+
+
+def debug_print_request():
+    """Clearly displays the payload that's being sent to the backend."""
+    print("\n" + "-" * 50)
+    print("[BACKEND REQUEST] This full history is being sent to Groq:")
+    for i, msg in enumerate(history, start=1):
+        role = msg["role"].upper()
+        content_preview = msg["content"][:70]
+        print(f"  {i}. [{role}] {content_preview}")
+    print(f"  Total messages being sent: {len(history)}")
+    print(f"  Model: {MODEL_NAME}")
+    print(f"  Endpoint: https://api.groq.com/openai/v1/chat/completions")
+    print("-" * 50)
+
+
+def debug_print_response(response):
+    """Displays the important parts of the response received from the backend."""
+    print("[BACKEND RESPONSE] This came back from Groq:")
+    print(f"  Model that actually ran: {response.model}")
+    print(f"  Input tokens used: {response.usage.prompt_tokens}")
+    print(f"  Output tokens generated: {response.usage.completion_tokens}")
+    print(f"  Total tokens: {response.usage.total_tokens}")
+    print("-" * 50 + "\n")
+
+
+def chat(user_input: str) -> str:
+    if not user_input.strip():
+        return "[Empty messages are not allowed. Please type something.]"
+
+    history.append({"role": "user", "content": user_input})
+    trim_history()
+
+    if DEBUG_MODE:
+        debug_print_request()
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=history,
+        )
+        reply = response.choices[0].message.content
+    except Exception as e:
+        return f"[An error occurred: {e}]"
+
+    if DEBUG_MODE:
+        debug_print_response(response)
+
+    history.append({"role": "assistant", "content": reply})
+
+    return reply
+
+
+# ---------------------------------------------------------
+# STEP 3: MAIN LOOP
+# ---------------------------------------------------------
+def main():
+    print("=" * 50)
+    print(" Custom AI Chatbot with Memory - DecodeLabs")
+    print(f" Debug Mode: {'ON' if DEBUG_MODE else 'OFF'}")
+    print(" Type 'exit' or 'quit' to close")
+    print("=" * 50)
+
+    while True:
+        user_input = input("\nYou: ")
+
+        if user_input.lower().strip() in ("exit", "quit"):
+            print("Shutting down the chatbot. Goodbye!")
+            break
+
+        reply = chat(user_input)
+        print(f"AI: {reply}")
+
+
+if __name__ == "__main__":
+    main()
