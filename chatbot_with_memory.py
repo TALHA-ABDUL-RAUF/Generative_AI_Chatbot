@@ -170,24 +170,41 @@ Available commands:
   /help   - Show this help message
   /exit   - Quit the chatbot (also: /quit, exit, quit)
 """
-
 def main():
+    load_history()
     print("=" * 50)
     print(" Custom AI Chatbot with Memory - DecodeLabs")
     print(f" Debug Mode: {'ON' if DEBUG_MODE else 'OFF'}")
-    print(" Type 'exit' or 'quit' to close")
+    print(" Type '/help' for commands, 'exit' or 'quit' to close")
     print("=" * 50)
 
     while True:
-        user_input = input("\nYou: ")
+        try:
+            user_input = input("\nYou: ")
+        except (KeyboardInterrupt, EOFError):
+            print("\nInterrupted. Saving memory and shutting down. Goodbye!")
+            save_history()
+            break
 
-        if user_input.lower().strip() in ("exit", "quit"):
+        command = user_input.lower().strip()
+
+        if command in ("exit", "quit", "/exit", "/quit"):
+            save_history()
             print("Shutting down the chatbot. Goodbye!")
             break
+        elif command == "/help":
+            print(HELP_TEXT)
+            continue
+        elif command == "/save":
+            save_history()
+            print("[Memory] Conversation saved.")
+            continue
+        elif command == "/clear":
+            clear_history()
+            continue
 
         reply = chat(user_input)
         print(f"AI: {reply}")
-
 
 if __name__ == "__main__":
     main()
