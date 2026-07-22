@@ -56,6 +56,37 @@ history = []
 MAX_MESSAGES = 15
 
 
+def load_history():
+    """Load saved conversation from disk, if it exists."""
+    global history
+    if os.path.exists(MEMORY_FILE):
+        try:
+            with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+                history = json.load(f)
+            print(f"[Memory] Loaded {len(history)} messages from {MEMORY_FILE}")
+        except (json.JSONDecodeError, OSError):
+            print("[Memory] Could not read saved memory file, starting fresh.")
+            history = []
+    if not history or history[0].get("role") != "system":
+        history.insert(0, {"role": "system", "content": SYSTEM_PROMPT})
+
+
+def save_history():
+    """Save current conversation to disk."""
+    try:
+        with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, indent=2, ensure_ascii=False)
+    except OSError as e:
+        print(f"[Memory] Could not save history: {e}")
+
+
+def clear_history():
+    global history
+    history = [{"role": "system", "content": SYSTEM_PROMPT}]
+    save_history()
+    print("[Memory] Conversation history cleared.")
+
+
 def trim_history():
     global history
     if len(history) > MAX_MESSAGES:
