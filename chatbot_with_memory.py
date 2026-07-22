@@ -6,7 +6,7 @@ Project 1 - DecodeLabs Generative AI Internship
 This version clearly displays every request and response in the
 terminal, so you can see for yourself what's happening in the "backend".
 """
-
+"""
 Improvements over the original version:
   1. Persistent memory  -> conversation is saved to / loaded from a JSON
                             file, so memory survives closing the terminal.
