@@ -1,13 +1,8 @@
 """
-Custom AI Chatbot with Memory (Debug Mode)
---------------------------------------------
+Custom AI Chatbot with Memory (Debug Mode) - Improved
+--------------------------------------------------------
 Project 1 - DecodeLabs Generative AI Internship
 
-This version clearly displays every request and response in the
-terminal, so you can see for yourself what's happening in the "backend".
-"""
-
-"""
 Improvements over the original version:
   1. Persistent memory  -> conversation is saved to / loaded from a JSON
                             file, so memory survives closing the terminal.
@@ -21,15 +16,9 @@ Improvements over the original version:
 
 import os
 import sys
-from openai import OpenAI
+import json
 from datetime import datetime
-from openai import Open
-# ---------------------------------------------------------
-# STEP 0: DEBUG MODE ON/OFF
-# ---------------------------------------------------------
-# Keep it True to see detailed request/response info in the terminal.
-# Set it to False to run like a clean, normal chatbot.
-DEBUG_MODE = True
+from openai import OpenAI
 
 # ---------------------------------------------------------
 # STEP 0: CONFIG
@@ -50,7 +39,6 @@ SYSTEM_PROMPT = (
 # STEP 1: API KEY SETUP
 # ---------------------------------------------------------
 API_KEY = os.environ.get("GROQ_API_KEY")
-
 if not API_KEY:
     print("ERROR: GROQ_API_KEY environment variable is not set.")
     print("Run this command in PowerShell:")
@@ -62,13 +50,10 @@ client = OpenAI(
     base_url="https://api.groq.com/openai/v1",
 )
 
-MODEL_NAME = "llama-3.3-70b-versatile"
-
 # ---------------------------------------------------------
-# STEP 2: MEMORY SETUP
+# STEP 2: MEMORY SETUP (now persistent)
 # ---------------------------------------------------------
 history = []
-MAX_MESSAGES = 15
 
 
 def load_history():
@@ -103,10 +88,13 @@ def clear_history():
 
 
 def trim_history():
+    """Keep history within MAX_MESSAGES, always preserving the system prompt."""
     global history
     if len(history) > MAX_MESSAGES:
-        history = history[-MAX_MESSAGES:]
-      
+        system_msg = history[0]
+        history = [system_msg] + history[-(MAX_MESSAGES - 1):]
+
+
 # ---------------------------------------------------------
 # STEP 3: DEBUG HELPERS
 # ---------------------------------------------------------
@@ -120,64 +108,60 @@ def log_line(line: str):
     except OSError:
         pass
 
+
 def debug_print_request():
-    """Clearly displays the payload that's being sent to the backend."""
-    print("\n" + "-" * 50)
-    print("[BACKEND REQUEST] This full history is being sent to Groq:")
+    log_line("\n" + "-" * 50)
+    log_line(f"[{datetime.now().isoformat(timespec='seconds')}] BACKEND REQUEST")
     for i, msg in enumerate(history, start=1):
         role = msg["role"].upper()
         content_preview = msg["content"][:70]
-        print(f"  {i}. [{role}] {content_preview}")
-    print(f"  Total messages being sent: {len(history)}")
-    print(f"  Model: {MODEL_NAME}")
-    print(f"  Endpoint: https://api.groq.com/openai/v1/chat/completions")
-    print("-" * 50)
+        log_line(f"  {i}. [{role}] {content_preview}")
+    log_line(f"  Total messages being sent: {len(history)}")
+    log_line(f"  Model: {MODEL_NAME}")
+    log_line("  Endpoint: https://api.groq.com/openai/v1/chat/completions")
+    log_line("-" * 50)
 
 
 def debug_print_response(response):
-    """Displays the important parts of the response received from the backend."""
-    print("[BACKEND RESPONSE] This came back from Groq:")
-    print(f"  Model that actually ran: {response.model}")
-    print(f"  Input tokens used: {response.usage.prompt_tokens}")
-    print(f"  Output tokens generated: {response.usage.completion_tokens}")
-    print(f"  Total tokens: {response.usage.total_tokens}")
-    print("-" * 50 + "\n")
+    log_line("[BACKEND RESPONSE]")
+    log_line(f"  Model that actually ran: {response.model}")
+    log_line(f"  Input tokens used: {response.usage.prompt_tokens}")
+    log_line(f"  Output tokens generated: {response.usage.completion_tokens}")
+    log_line(f"  Total tokens: {response.usage.total_tokens}")
+    log_line("-" * 50 + "\n")
+
 
 # ---------------------------------------------------------
 # STEP 4: CHAT FUNCTION
 # ---------------------------------------------------------
-
 def chat(user_input: str) -> str:
     if not user_input.strip():
         return "[Empty messages are not allowed. Please type something.]"
 
     history.append({"role": "user", "content": user_input})
     trim_history()
-
-    if DEBUG_MODE:
-        debug_print_request()
+    debug_print_request()
 
     try:
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=history,
+            temperature=TEMPERATURE,
         )
         reply = response.choices[0].message.content
     except Exception as e:
+        history.pop()  # remove the user message that failed, so memory stays clean
         return f"[An error occurred: {e}]"
 
-    if DEBUG_MODE:
-        debug_print_response(response)
-
+    debug_print_response(response)
     history.append({"role": "assistant", "content": reply})
-
+    save_history()
     return reply
 
 
 # ---------------------------------------------------------
-# STEP 3: MAIN LOOP
+# STEP 5: MAIN LOOP
 # ---------------------------------------------------------
-
 HELP_TEXT = """
 Available commands:
   /save   - Manually save the conversation to disk
@@ -185,6 +169,8 @@ Available commands:
   /help   - Show this help message
   /exit   - Quit the chatbot (also: /quit, exit, quit)
 """
+
+
 def main():
     load_history()
     print("=" * 50)
@@ -220,6 +206,7 @@ def main():
 
         reply = chat(user_input)
         print(f"AI: {reply}")
+
 
 if __name__ == "__main__":
     main()
