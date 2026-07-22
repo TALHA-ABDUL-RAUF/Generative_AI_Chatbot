@@ -6,6 +6,7 @@ Project 1 - DecodeLabs Generative AI Internship
 This version clearly displays every request and response in the
 terminal, so you can see for yourself what's happening in the "backend".
 """
+
 """
 Improvements over the original version:
   1. Persistent memory  -> conversation is saved to / loaded from a JSON
@@ -21,7 +22,8 @@ Improvements over the original version:
 import os
 import sys
 from openai import OpenAI
-
+from datetime import datetime
+from openai import Open
 # ---------------------------------------------------------
 # STEP 0: DEBUG MODE ON/OFF
 # ---------------------------------------------------------
