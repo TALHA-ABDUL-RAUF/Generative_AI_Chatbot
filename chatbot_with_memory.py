@@ -128,6 +128,9 @@ def debug_print_response(response):
     print(f"  Total tokens: {response.usage.total_tokens}")
     print("-" * 50 + "\n")
 
+# ---------------------------------------------------------
+# STEP 4: CHAT FUNCTION
+# ---------------------------------------------------------
 
 def chat(user_input: str) -> str:
     if not user_input.strip():
