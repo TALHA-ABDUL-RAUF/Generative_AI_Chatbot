@@ -32,6 +32,21 @@ from openai import Open
 DEBUG_MODE = True
 
 # ---------------------------------------------------------
+# STEP 0: CONFIG
+# ---------------------------------------------------------
+DEBUG_MODE = True                     # Show backend request/response details
+MEMORY_FILE = "chat_memory.json"      # Where conversation history is saved
+DEBUG_LOG_FILE = "debug_log.txt"      # Where debug info is written
+MAX_MESSAGES = 15                     # Max messages kept in memory (incl. system)
+MODEL_NAME = "llama-3.3-70b-versatile"
+TEMPERATURE = 0.7
+
+SYSTEM_PROMPT = (
+    "You are a helpful, friendly AI assistant built for a DecodeLabs "
+    "Keep answers clear and concise."
+)
+
+# ---------------------------------------------------------
 # STEP 1: API KEY SETUP
 # ---------------------------------------------------------
 API_KEY = os.environ.get("GROQ_API_KEY")
