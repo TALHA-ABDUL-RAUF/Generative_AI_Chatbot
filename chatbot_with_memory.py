@@ -7,6 +7,17 @@ This version clearly displays every request and response in the
 terminal, so you can see for yourself what's happening in the "backend".
 """
 
+Improvements over the original version:
+  1. Persistent memory  -> conversation is saved to / loaded from a JSON
+                            file, so memory survives closing the terminal.
+  2. System prompt       -> defines the assistant's behavior/persona.
+  3. In-chat commands    -> /save, /clear, /help, /exit
+  4. Graceful shutdown   -> Ctrl+C / Ctrl+D no longer crash the program.
+  5. Config section       -> all tunable settings live in one place.
+  6. Debug log file       -> debug info is written to a log file, not just
+                              printed, so it can be attached to a report.
+"""
+
 import os
 import sys
 from openai import OpenAI
@@ -16,7 +27,7 @@ from openai import OpenAI
 # ---------------------------------------------------------
 # Keep it True to see detailed request/response info in the terminal.
 # Set it to False to run like a clean, normal chatbot.
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 # ---------------------------------------------------------
 # STEP 1: API KEY SETUP
