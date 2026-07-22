@@ -91,7 +91,19 @@ def trim_history():
     global history
     if len(history) > MAX_MESSAGES:
         history = history[-MAX_MESSAGES:]
-
+      
+# ---------------------------------------------------------
+# STEP 3: DEBUG HELPERS
+# ---------------------------------------------------------
+def log_line(line: str):
+    """Write a line to both terminal (if DEBUG_MODE) and the log file."""
+    if DEBUG_MODE:
+        print(line)
+    try:
+        with open(DEBUG_LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except OSError:
+        pass
 
 def debug_print_request():
     """Clearly displays the payload that's being sent to the backend."""
