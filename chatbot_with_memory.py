@@ -40,7 +40,7 @@ MODEL_NAME = "llama-3.3-70b-versatile"
 # STEP 2: MEMORY SETUP
 # ---------------------------------------------------------
 history = []
-MAX_MESSAGES = 20
+MAX_MESSAGES = 15
 
 
 def trim_history():
