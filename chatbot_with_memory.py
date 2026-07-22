@@ -162,6 +162,15 @@ def chat(user_input: str) -> str:
 # ---------------------------------------------------------
 # STEP 3: MAIN LOOP
 # ---------------------------------------------------------
+
+HELP_TEXT = """
+Available commands:
+  /save   - Manually save the conversation to disk
+  /clear  - Clear conversation memory (keeps system prompt)
+  /help   - Show this help message
+  /exit   - Quit the chatbot (also: /quit, exit, quit)
+"""
+
 def main():
     print("=" * 50)
     print(" Custom AI Chatbot with Memory - DecodeLabs")
